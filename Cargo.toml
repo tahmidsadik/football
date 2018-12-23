@@ -1,0 +1,12 @@
+[package]
+name = "firefly"
+version = "0.1.0"
+authors = ["Tahmid Sadik <tahmid.sadik@webable.com.bd>"]
+
+[dependencies]
+ggez = "0.4.4"
+sdl2 = "0.31.0"
+rand = "0.6.1"
+
+[features]
+cargo-resource-root = []
