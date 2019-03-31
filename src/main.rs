@@ -2,8 +2,9 @@ extern crate ggez;
 extern crate rand;
 use ggez::event::{self, MouseButton};
 use ggez::graphics::{self, Image};
-use ggez::mint::{Vector2, Point2};
+use ggez::mint::{Point2, Vector2};
 use ggez::*;
+use std::path;
 
 struct WindowState {
     width: f32,
@@ -56,7 +57,7 @@ struct Lerp {
 impl MainState {
     fn new(_ctx: &mut Context) -> GameResult<MainState> {
         let s = MainState {
-            football: Image::new(_ctx, "/images/football.jpg").unwrap(),
+            football: Image::new(_ctx, "/football.png").unwrap(),
             x: 0.0,
             y: window.height as f32 / 2.0,
             mouse_down: false,
@@ -66,10 +67,14 @@ impl MainState {
     }
 }
 
-fn world_to_screen_coords(screen_width: f32, screen_height: f32, point: Point2<f32>) -> Point2<f32> {
+fn world_to_screen_coords(
+    screen_width: f32,
+    screen_height: f32,
+    point: Point2<f32>,
+) -> Point2<f32> {
     let x = point.x + screen_width / 2.0;
     let y = screen_height - (point.y + screen_height / 2.0);
-    Point2{x: x, y: y}
+    Point2 { x: x, y: y }
 }
 
 impl event::EventHandler for MainState {
@@ -84,13 +89,20 @@ impl event::EventHandler for MainState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, [0.0, 0.5, 0.0, 1.0].into());
-        let pos = world_to_screen_coords(window.width, window.height, Point2{x: self.x, y: self.y});
+        let pos = world_to_screen_coords(
+            window.width,
+            window.height,
+            Point2 {
+                x: self.x,
+                y: self.y,
+            },
+        );
 
         let draw_params = graphics::DrawParam {
             dest: pos,
             rotation: 0.0,
-            scale: Vector2{x: 0.25, y: 0.25},
-            offset: Point2{x: 0.5, y: 0.5},
+            scale: Vector2 { x: 0.25, y: 0.25 },
+            offset: Point2 { x: 0.5, y: 0.5 },
             ..Default::default()
         };
         graphics::draw(ctx, &self.football, draw_params);
@@ -112,29 +124,18 @@ impl event::EventHandler for MainState {
 }
 
 pub fn main() -> GameResult {
-    let c = conf::Conf {
-        window_mode: conf::WindowMode {
-            width: window.width,
-            height: window.height,
-            borderless: false,
-            fullscreen_type: conf::FullscreenType::Desktop,
-            min_width: 0.0,
-            max_width: 0.0,
-            min_height: 0.0,
-            max_height: 0.0,
-            hidpi: false,
-            maximized: false,
-            resizable: false,
-        },
-        window_setup: conf::WindowSetup::default(),
-        backend: conf::Backend::OpenGL { major: 3, minor: 2 },
-        modules: conf::ModuleConf::default()
-    };
-    
+    let resource_dir = path::PathBuf::from("./images");
+
     let cb = ContextBuilder::new("touchball", "ggez")
-    .window_setup(conf::WindowSetup::default().title("juggleball"))
-    .window_mode(conf::WindowMode::default().dimensions(window.width, window.height));
-    
+        .add_resource_path(resource_dir)
+        .window_setup(conf::WindowSetup::default().title("juggleball"))
+        .window_mode(
+            conf::WindowMode::default()
+                .dimensions(window.width, window.height)
+                .hidpi(false)
+                .maximized(false),
+        );
+
     let (ctx, events_loop) = &mut cb.build()?;
     let game = &mut MainState::new(ctx)?;
     event::run(ctx, events_loop, game)
